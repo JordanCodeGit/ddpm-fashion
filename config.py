@@ -39,6 +39,10 @@ class Config:
     ch_mult: tuple = (1, 2, 2)
     time_emb_dim: int = 256
     dropout: float = 0.1
+    num_res_blocks: int = 2          # ResBlock per tingkat resolusi
+    num_groups: int = 8              # grup GroupNorm; harus membagi semua jumlah channel
+    num_heads: int = 4               # head self-attention
+    attn_resolutions: tuple = (7,)   # resolusi encoder/decoder yang diberi attention (bottleneck selalu)
 
     # training
     batch_size: int = 128
@@ -53,12 +57,26 @@ class Config:
     seed: int = 42
     device: str = "cuda"
     run_name: str = "baseline"
+    data_root: str = "datasets"      # folder unduhan torchvision (jangan "data": bentrok dengan package data/)
+    runs_dir: str = "runs"           # induk folder output runs/<run_name>/
 
     def __post_init__(self) -> None:
         # JSON tidak punya tuple; list dari JSON/CLI dinormalkan ke tuple
-        if not isinstance(self.ch_mult, tuple):
-            object.__setattr__(self, "ch_mult", tuple(self.ch_mult))
+        for name in ("ch_mult", "attn_resolutions"):
+            value = getattr(self, name)
+            if not isinstance(value, tuple):
+                object.__setattr__(self, name, tuple(value))
         self._validate()
+
+    @property
+    def resolutions(self) -> tuple:
+        """Resolusi tiap tingkat U-Net, mis. (28, 14, 7) untuk ch_mult panjang 3."""
+        return tuple(self.img_size // (2 ** i) for i in range(len(self.ch_mult)))
+
+    @property
+    def run_dir(self) -> Path:
+        """Folder output run ini: runs_dir/run_name."""
+        return Path(self.runs_dir) / self.run_name
 
     def _validate(self) -> None:
         """Tolak kombinasi nilai yang pasti merusak run, sebelum training dimulai."""
@@ -84,11 +102,31 @@ class Config:
         _check(self.grad_clip > 0, "grad_clip harus > 0")
         _check(0.0 <= self.cond_drop_prob < 1.0, "cond_drop_prob harus di [0, 1)")
         _check(self.run_name.strip() != "", "run_name tidak boleh kosong")
+        _check(self.data_root.strip() != "" and self.runs_dir.strip() != "",
+               "data_root dan runs_dir tidak boleh kosong")
+        self._validate_unet()
+
+    def _validate_unet(self) -> None:
+        """Cek kecocokan channel dengan GroupNorm/attention dan resolusi attention."""
+        _check(self.num_res_blocks > 0, "num_res_blocks harus > 0")
+        _check(self.num_groups > 0 and self.num_heads > 0, "num_groups dan num_heads harus > 0")
+        level_ch = [self.base_ch * m for m in self.ch_mult]
+        # skip connection di-concat: decoder melihat ch_level + ch_skip (tingkat sama atau lebih tinggi)
+        all_ch = set(level_ch) | {a + b for a in level_ch for b in level_ch}
+        bad = sorted(c for c in all_ch if c % self.num_groups != 0)
+        _check(not bad, f"num_groups={self.num_groups} tidak membagi channel {bad}")
+        _check(all(r in self.resolutions for r in self.attn_resolutions),
+               f"attn_resolutions {self.attn_resolutions} harus subset dari {self.resolutions}")
+        attn_ch = [ch for ch, r in zip(level_ch, self.resolutions) if r in self.attn_resolutions]
+        attn_ch.append(level_ch[-1])  # bottleneck
+        bad = sorted(c for c in set(attn_ch) if c % self.num_heads != 0)
+        _check(not bad, f"num_heads={self.num_heads} tidak membagi channel attention {bad}")
 
     def to_dict(self) -> dict[str, Any]:
         """Semua field sebagai dict biasa (siap di-dump ke JSON)."""
         d = dataclasses.asdict(self)
         d["ch_mult"] = list(self.ch_mult)
+        d["attn_resolutions"] = list(self.attn_resolutions)
         return d
 
     def save_json(self, path: str | Path) -> None:
