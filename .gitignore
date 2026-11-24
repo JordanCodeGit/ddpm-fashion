@@ -1,0 +1,32 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# --- Lingkungan virtual ---
+.venv/
+venv/
+env/
+
+# --- Notebook ---
+.ipynb_checkpoints/
+
+# --- IDE / OS (Windows ikut) ---
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# --- Dataset hasil unduhan torchvision (jangan di-commit, ~80 MB) ---
+datasets/
+data/FashionMNIST/
+
+# --- Checkpoint dan bobot model (sesuai kontrak: tidak di-commit) ---
+*.pt
+*.pth
+*.ckpt
+
+# config.json, metrics.csv, samples_epoch_XXX.png, dan eval.json di runs/
+# SENGAJA tetap di-commit: kecil, dan dibutuhkan untuk grafik dan laporan.

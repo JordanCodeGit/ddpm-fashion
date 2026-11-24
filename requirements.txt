@@ -1,0 +1,17 @@
+# ------------------------------------------------------------------
+# LANGKAH 1 (WAJIB, Windows + GPU NVIDIA): pasang PyTorch versi CUDA dulu.
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu126
+#   python -c "import torch; print(torch.__version__, torch.cuda.is_available())"
+#   -> harus mencetak versi berakhiran +cu126 dan True.
+# Jika langkah ini dilewati, pip di Windows memasang build CPU dari PyPI.
+#
+# LANGKAH 2:
+#   pip install -r requirements.txt
+# Baris torch/torchvision di bawah akan dianggap sudah terpenuhi oleh langkah 1.
+# ------------------------------------------------------------------
+torch>=2.4
+torchvision>=0.19
+numpy>=1.24
+matplotlib>=3.7
+pandas>=2.0
+tqdm>=4.65
