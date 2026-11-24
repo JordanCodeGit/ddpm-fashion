@@ -9,6 +9,14 @@ Pemakaian:
     from config import get_config
     cfg = get_config()                 # membaca sys.argv
     cfg = get_config(["--T", "500"])   # untuk tes/notebook
+
+Skrip yang punya argumen sendiri (mis. sample.py --ckpt, evaluate.py --n_per_class)
+mem-parse argumennya dulu, lalu meneruskan sisanya ke get_config. get_config sengaja
+tetap memakai parse_args (ketat) agar typo seperti --lrr langsung eror:
+    p = argparse.ArgumentParser(allow_abbrev=False)
+    p.add_argument("--n_per_class", type=int, default=100)
+    extra, rest = p.parse_known_args()
+    cfg = get_config(rest)
 """
 
 import argparse
@@ -57,7 +65,7 @@ class Config:
     seed: int = 42
     device: str = "cuda"
     run_name: str = "baseline"
-    data_root: str = "datasets"      # folder unduhan torchvision (jangan "data": bentrok dengan package data/)
+    data_root: str = "data_cache"    # folder unduhan torchvision (jangan "data": bentrok dengan package data/)
     runs_dir: str = "runs"           # induk folder output runs/<run_name>/
 
     def __post_init__(self) -> None:
@@ -180,6 +188,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Conditional DDPM Fashion-MNIST",
         argument_default=argparse.SUPPRESS,  # argumen yang tidak diketik tidak ikut menimpa
+        allow_abbrev=False,  # --ch 1 2 4 tidak boleh diam-diam dibaca sebagai --ch_mult
     )
     parser.add_argument("--from_json", type=str,
                         help="muat nilai dasar dari file config.json sebelum override CLI")
