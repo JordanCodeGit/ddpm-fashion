@@ -35,7 +35,7 @@ LOG INTERAKSI LLM - KELOMPOK KAJA
 - Tanggal Sesi: 25/11/2026
 - Anggota/Peran: Aksa / Data Pipeline & Preprocessing Engineer
 - Target Modul: setup repo/environment, verifikasi data/dataset.py + runs/data_check.png
-- Tautan Sesi Chat: [ISI TAUTAN SHARE CHAT SESI INI]
+- Tautan Sesi Chat: https://github.com/JordanCodeGit/ddpm-fashion/blob/data/docs/logs/transcript_aksa.md (sesi Google Antigravity lokal, diekspor ke transkrip di repo)
 
 1. TAHAP INISIASI
    - Prompt Kelompok:
@@ -76,7 +76,7 @@ LOG INTERAKSI LLM - KELOMPOK KAJA
 - Tanggal Sesi: 25/11/2026
 - Anggota/Peran: Aksa / Data Pipeline & Preprocessing Engineer
 - Target Modul: eval/classifier.py
-- Tautan Sesi Chat: [ISI TAUTAN SHARE CHAT SESI INI]
+- Tautan Sesi Chat: https://github.com/JordanCodeGit/ddpm-fashion/blob/data/docs/logs/transcript_aksa.md (sesi Google Antigravity lokal, diekspor ke transkrip di repo)
 
 1. TAHAP INISIASI
    - Prompt Kelompok: "Lanjut sub tugas 2"
@@ -107,7 +107,7 @@ LOG INTERAKSI LLM - KELOMPOK KAJA
 - Tanggal Sesi: 25/11/2026
 - Anggota/Peran: Aksa / Data Pipeline & Preprocessing Engineer
 - Target Modul: eval/evaluate.py
-- Tautan Sesi Chat: [ISI TAUTAN SHARE CHAT SESI INI]
+- Tautan Sesi Chat: https://github.com/JordanCodeGit/ddpm-fashion/blob/data/docs/logs/transcript_aksa.md (sesi Google Antigravity lokal, diekspor ke transkrip di repo)
 
 1. TAHAP INISIASI
    - Prompt Kelompok: "Lanjut sub tugas 3"
