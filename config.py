@@ -59,7 +59,7 @@ class Config:
     num_workers: int = 2
     ema_decay: float = 0.999
     grad_clip: float = 1.0
-    cond_drop_prob: float = 0.0
+    cond_drop_prob: float = 0.1      # peluang y diganti token tanpa kelas saat training (CFG)
 
     # misc
     seed: int = 42
