@@ -1,0 +1,112 @@
+{
+  "arguments": {
+    "budget_hours": 1.0,
+    "tuning_epochs": null,
+    "final_epochs": null,
+    "batch_tuning": false,
+    "batch_tuning_epochs": null,
+    "timing_run": null,
+    "timing_log": null,
+    "auto_timing": true,
+    "safety_margin": 0.15,
+    "tuning_only": true,
+    "dry_run": false,
+    "guidance_scale": 0.0,
+    "device": null,
+    "seed": null,
+    "runs_dir": null,
+    "reuse_tuning": false,
+    "self_test": false
+  },
+  "commands": [
+    {
+      "stage": "timing_test",
+      "argv": [
+        "C:\\Users\\jorda\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "-u",
+        "-m",
+        "train",
+        "--from_json",
+        "C:\\Users\\jorda\\Downloads\\ddpm-fashion\\ddpm-fashion\\runs\\_experiments\\experiment_20261126_204327_0lwg38cq\\base_config.json",
+        "--epochs",
+        "1",
+        "--lr",
+        "0.0002",
+        "--batch_size",
+        "128",
+        "--run_name",
+        "timing_test"
+      ]
+    },
+    {
+      "stage": "baseline",
+      "argv": [
+        "C:\\Users\\jorda\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "-u",
+        "-m",
+        "train",
+        "--from_json",
+        "C:\\Users\\jorda\\Downloads\\ddpm-fashion\\ddpm-fashion\\runs\\_experiments\\experiment_20261126_204327_0lwg38cq\\base_config.json",
+        "--epochs",
+        "3",
+        "--lr",
+        "0.0002",
+        "--batch_size",
+        "128",
+        "--run_name",
+        "baseline"
+      ]
+    },
+    {
+      "stage": "lr_high",
+      "argv": [
+        "C:\\Users\\jorda\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "-u",
+        "-m",
+        "train",
+        "--from_json",
+        "C:\\Users\\jorda\\Downloads\\ddpm-fashion\\ddpm-fashion\\runs\\_experiments\\experiment_20261126_204327_0lwg38cq\\base_config.json",
+        "--epochs",
+        "3",
+        "--lr",
+        "0.001",
+        "--batch_size",
+        "128",
+        "--run_name",
+        "lr_high"
+      ]
+    },
+    {
+      "stage": "lr_low",
+      "argv": [
+        "C:\\Users\\jorda\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "-u",
+        "-m",
+        "train",
+        "--from_json",
+        "C:\\Users\\jorda\\Downloads\\ddpm-fashion\\ddpm-fashion\\runs\\_experiments\\experiment_20261126_204327_0lwg38cq\\base_config.json",
+        "--epochs",
+        "3",
+        "--lr",
+        "5e-05",
+        "--batch_size",
+        "128",
+        "--run_name",
+        "lr_low"
+      ]
+    }
+  ],
+  "timing_initial": {
+    "epoch": 177.14439769999444,
+    "monitor": 79.868,
+    "startup": 30.0,
+    "per_epoch_overhead": 30.0,
+    "final_sampling": 239.60399999999998,
+    "source": "C:\\Users\\jorda\\Downloads\\ddpm-fashion\\ddpm-fashion\\runs\\timing_test",
+    "assumptions": [
+      "Startup and per-epoch checkpoint overhead estimated conservatively; not a guarantee",
+      "Final sample.py time estimated as 3x monitoring grid, doubled for positive CFG; not measured"
+    ]
+  },
+  "tuning_epochs": 3
+}
