@@ -136,6 +136,44 @@ LOG INTERAKSI LLM - KELOMPOK KAJA
 ````
 
 
-## Log 5: evaluasi checkpoint final (A4 — menunggu Gerbang G3)
+## Log 5: uji integrasi dengan origin/train dan evaluasi checkpoint final Sub-tugas 4 (A4)
 
-<!-- Lengkapi log ini setelah `diffusion/ddpm.py` dan `runs/<run_name>/ckpt_ema.pt` tersedia lalu `eval/evaluate.py` dijalankan pada checkpoint final. -->
+````
+LOG INTERAKSI LLM - KELOMPOK KAJA
+- Tanggal Sesi: 26/11/2026
+- Anggota/Peran: Aksa / Data Pipeline & Preprocessing Engineer
+- Target Modul: eval/evaluate.py (uji integrasi dengan diffusion/ddpm.py Axan + evaluasi final runs/final/ dan runs/final_cfg2_0/)
+- Tautan Sesi Chat: https://github.com/JordanCodeGit/ddpm-fashion/blob/data/docs/logs/transcript_aksa.md (sesi Google Antigravity lokal, diekspor ke transkrip di repo)
+
+1. TAHAP INISIASI
+   - Prompt Kelompok:
+     "Okay, milik axan sudah. Tolong cek dan kita selesaikan tugas kita"
+     Prompt lanjutan:
+     "Saya belum mendapatkan file ckpt_ema.pt + config.json dan poin seterusnya. Tolong kita kerjakan sendiri saja agar cepat selesai tugas saya"
+     "Opsi 2"
+     "Okay, sudah dan sudah ada fi folder"
+   - Alasan Khusus: Setelah Axan mendorong `diffusion/schedule.py`, `diffusion/ddpm.py`, `train.py`, dan `sample.py` ke branch `origin/train` (`227ec6f`), saya meminta pengecekan integrasi langsung dengan `eval/evaluate.py`. Karena di `origin/train` baru tersedia artefak smoke test (`T=3, epochs=1`) sedangkan training penuh 20 epoch + sampling `T=1000` di CPU lokal memakan waktu puluhan jam, saya memilih Opsi 2: menjalankan training final 20 epoch dan evaluasi `eval/evaluate.py` di Google Colab GPU T4 lewat notebook terotomasi (`colab_train_and_eval_aksa.ipynb`) yang menggabungkan `main` + `origin/data` + `origin/train` tanpa menimpa PyTorch CUDA bawaan Colab dengan wheel `cu130`. Saya juga menjalankan evaluasi pada `guidance_scale = 0.0` (standar kontrak) sekaligus `guidance_scale = 2.0` untuk mengukur secara empiris dampak classifier-free guidance (`cond_drop_prob = 0.1`) terhadap akurasi kelas.
+   - Output Model: Uji integrasi terisolasi antara `eval/evaluate.py`, `models/unet.py`, `eval/classifier.pt`, dan `diffusion/ddpm.py` + `diffusion/schedule.py` asli milik Axan lulus tanpa ubah kode untuk `w=0.0` maupun `w=1.5`. Selanjutnya dibuat notebook Colab T4 (`colab_train_and_eval_aksa.ipynb`) yang terverifikasi sintaks & bebas konflik merge, lalu dijalankan di GPU T4 selama 20 epoch (`runs/final/`: `train_loss` turun `0.08065 -> 0.03627`, `val_loss` turun `0.04895 -> 0.03533`, ~134 detik/epoch; classifier test acc `93.08%`). Evaluasi final Sub-tugas 4 (`n_per_class=100`, total 1.000 sampel) menghasilkan `overall_acc = 91.50%` pada `w=0.0` (`runs/final/eval.json` + `confusion.png`, hanya 1.58 pp di bawah akurasi classifier pada test set asli `93.08%`, dengan `Trouser` 100%, `Bag`/`Ankle boot` 98%, `Sandal`/`Sneaker` 96%, dan kelas tersulit `Shirt` 70% dan `Coat` 79%). Hasil seluruh artefak diekstrak dari `hasil_eval_aksa.zip` ke `runs/final/` dan `runs/final_cfg2_0/`.
+     Cuplikan hasil krusial (`runs/final/eval.json`, `w=0.0`):
+     ```json
+     {
+       "overall_acc": 0.915,
+       "per_class_acc": {
+         "T-shirt/top": 0.91, "Trouser": 1.0, "Pullover": 0.92,
+         "Dress": 0.95, "Coat": 0.79, "Sandal": 0.96,
+         "Shirt": 0.7, "Sneaker": 0.96, "Bag": 0.98, "Ankle boot": 0.98
+       },
+       "classifier_test_acc": 0.9308,
+       "n_per_class": 100,
+       "guidance_scale": 0.0,
+       "used_stub": false
+     }
+     ```
+
+2. TAHAP PENANGANAN EROR / DEBUGGING
+   Tidak ada eror pada eksekusi Google Colab GPU T4 maupun pada kode modul (`eval/classifier.py`, `eval/evaluate.py`, `train.py`, `diffusion/ddpm.py`).
+   Catatan teknis uji integrasi terisolasi lokal: saat skrip uji sementara menyalin file dari `origin/train` via PowerShell `Set-Content -Encoding UTF8` muncul `JSONDecodeError: Unexpected UTF-8 BOM` dan bentrok `PYTHONPATH` karena `diffusion/__init__.py` di direktori kerja; keduanya diselesaikan di skrip uji sementara menggunakan `git show` biner via Python dan direktori kerja terisolasi (`cwd=scratch`), sehingga integrasi kode asli lulus 100% tanpa perubahan pada kode produksi.
+
+3. TAHAP OPTIMASI
+   Dilakukan eksperimen evaluasi tambahan dengan Classifier-Free Guidance `guidance_scale = 2.0` (`runs/final_cfg2_0/eval.json` dan `runs/final_cfg2_0/confusion.png`, memanfaatkan `cond_drop_prob = 0.1` dari model final yang sama tanpa melatih ulang). Dampaknya pada metrik: `overall_acc` meningkat dari `91.50%` (`w=0.0`) menjadi `99.90%` (`w=2.0`), dengan 9 dari 10 kelas mencapai `100%` dan kelas tersulit `Shirt` naik tajam dari `70%` menjadi `99%` (hanya 1 dari 100 sampel salah diprediksi sebagai `Coat`). Akurasi `w=2.0` melampaui akurasi classifier pada data test asli (`93.08%`) karena CFG memfokuskan generasi pada bentuk prototipe kelas yang paling jelas (trade-off klasik *fidelity* vs *diversity*), sedangkan `w=0.0` (`91.50%`) mencerminkan kesesuaian distribusi yang lebih realistis terhadap Fashion-MNIST asli.
+````
