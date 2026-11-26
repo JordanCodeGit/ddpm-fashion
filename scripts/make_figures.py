@@ -24,6 +24,19 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes, mark_inset
 
 from config import Config, get_config
 
+FASHION_MNIST_CLASSES_EN: list[str] = [
+    "T-shirt/top",
+    "Trouser",
+    "Pullover",
+    "Dress",
+    "Coat",
+    "Sandal",
+    "Shirt",
+    "Sneaker",
+    "Bag",
+    "Ankle boot",
+]
+
 FASHION_MNIST_CLASSES_ID: list[str] = [
     "0: Kaos/Atasan",
     "1: Celana Panjang",
@@ -361,7 +374,7 @@ def plot_tuning_val_loss_comparison(runs: list[RunArtifact], out_path: Path, dpi
 
 
 def _extract_per_class_acc(raw_per_class: Any, num_classes: int) -> list[float]:
-    """Menormalisasi format per_class_acc dari eval.json (list atau dict) ke list float [10]."""
+    """Menormalisasi format per_class_acc dari eval.json (list, dict indeks, atau dict nama kelas) ke list float [10]."""
     if isinstance(raw_per_class, list):
         if len(raw_per_class) != num_classes:
             raise ValueError(
@@ -370,15 +383,40 @@ def _extract_per_class_acc(raw_per_class: Any, num_classes: int) -> list[float]:
         return [float(v) for v in raw_per_class]
 
     if isinstance(raw_per_class, dict):
+        lower_lookup: dict[str, Any] = {
+            str(k).strip().lower(): v for k, v in raw_per_class.items()
+        }
         values: list[float] = []
         for cls_idx in range(num_classes):
             key_str = str(cls_idx)
             if key_str in raw_per_class:
                 values.append(float(raw_per_class[key_str]))
-            elif cls_idx in raw_per_class:
+                continue
+            if cls_idx in raw_per_class:
                 values.append(float(raw_per_class[cls_idx]))
-            else:
-                raise KeyError(f"Kelas {cls_idx} tidak ditemukan di per_class_acc.")
+                continue
+
+            if cls_idx < len(FASHION_MNIST_CLASSES_EN):
+                en_name = FASHION_MNIST_CLASSES_EN[cls_idx]
+                if en_name in raw_per_class:
+                    values.append(float(raw_per_class[en_name]))
+                    continue
+                if en_name.lower() in lower_lookup:
+                    values.append(float(lower_lookup[en_name.lower()]))
+                    continue
+
+            if cls_idx < len(FASHION_MNIST_CLASSES_ID):
+                id_name = FASHION_MNIST_CLASSES_ID[cls_idx]
+                if id_name in raw_per_class:
+                    values.append(float(raw_per_class[id_name]))
+                    continue
+                if id_name.lower() in lower_lookup:
+                    values.append(float(lower_lookup[id_name.lower()]))
+                    continue
+
+            raise KeyError(
+                f"Kelas {cls_idx} tidak ditemukan di per_class_acc. Key tersedia: {list(raw_per_class.keys())}"
+            )
         return values
 
     raise TypeError("Format per_class_acc di eval.json harus berupa list atau dict.")
