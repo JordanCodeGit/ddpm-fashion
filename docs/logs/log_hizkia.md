@@ -60,6 +60,3 @@ LOG INTERAKSI LLM - KELOMPOK KAJA
     File "/content/ddpm-fashion/scripts/make_figures.py", line 18, in <module>
       from config import Config, get_config
   ModuleNotFoundError: No module named 'config'
-
----
-
